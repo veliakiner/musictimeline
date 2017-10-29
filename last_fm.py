@@ -65,23 +65,26 @@ discovered_songs = {}
 
 
 
+def song_discovered(listen_data):
+    if len(listen_data) < 2:
+        # INSUFFICIENT DATA FOR MEANINGFUL ANSWER
+        return False
+    latest_listen, prev_listen = listen_data[-1], listen_data[-2]
+    if (latest_listen - prev_listen).days < 5:
+        return prev_listen
+
 
 
 current_day = None
 for listen in listens:
     unique_song = (listen.track, listen.artist)
-    last_listen  = listens_for_songs.get(unique_song, [None])[-1]
-    if last_listen and (listen.date.date() - last_listen).days < 5:
-        discovered_songs[unique_song] = discovered_songs.get(unique_song, last_listen)
-    last_listen = listen.date.date()
-    listens_for_songs[unique_song] = listens_for_songs.get(unique_song, []) + [last_listen]
+    latest_listen = listen.date.date()
+    listens_for_songs[unique_song] = listens_for_songs.get(unique_song, []) + [latest_listen]
+    total_listens = listens_for_songs[unique_song]
+    discovered_date = song_discovered(total_listens)
+    if discovered_date:
+        discovered_songs[unique_song] = discovered_songs.get(unique_song, discovered_date)
 
-# for track in listens_for_songs.keys():
-#     listen_dates = listens_for_songs[track]
-#     # print track, listen_dates
-#     for i, date in enumerate(listen_dates[:-1]):
-#         if (listen_dates[i + 1] - listen_dates[i]).days < 5 and track not in discovered_songs.keys():
-#             discovered_songs[track] = listen_dates[i]
 
 with open("test.res", "w") as f:
     for item in sorted(discovered_songs.keys(), key=lambda x: discovered_songs[x]):

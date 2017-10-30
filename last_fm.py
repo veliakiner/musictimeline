@@ -13,12 +13,12 @@ class Listen():
 
 
 listens = []
-with open("C:/Users/Veli/Downloads/sample.csv") as f:
+with open("C:/Users/Veli/Downloads/Cookie_crumbs.csv") as f:
     for record in f.readlines()[::-1]:
         data = record.split(",")
         data[-1] = dateutil.parser.parse(data[-1], dayfirst=True)
         listens.append(Listen(*data))
-
+print("Opened data source")
 
 periods = "year", "month", "day"
 
@@ -85,6 +85,10 @@ for listen in listens:
     if discovered_date:
         discovered_songs[unique_song] = discovered_songs.get(unique_song, discovered_date)
 
+with open("playlist.csv", "w") as f:
+    for item in sorted(discovered_songs.keys(), key=lambda x: discovered_songs[x]):
+        for thing in (item[0], ",", item[1], ",", discovered_songs[item],"\n"):
+            f.write(str(thing))
 
 with open("test.res", "w") as f:
     for item in sorted(discovered_songs.keys(), key=lambda x: discovered_songs[x]):

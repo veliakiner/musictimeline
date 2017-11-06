@@ -23,21 +23,24 @@ print("Opened data source")
 periods = "year", "month", "day"
 
 
-def artist_discovered(filter_on="Imaginaerum", attribute="song", selected_period=()):
+def artist_discovered(filter_on="Imaginaerum",
+                      attribute="song", selected_period=()):
     # for listen in listens:
     #     if getattr(listen, attribute) == filter_on:
     #         return listen.date, listen.track, listen.album, listen.artist
-    relevant_listens = filter(lambda x: getattr(x, attribute).lower() == filter_on.lower(), listens)
+    relevant_listens = filter(
+        lambda x: getattr(x, attribute).lower() == filter_on.lower(), listens)
     years = {}
-
 
     subperiods = periods[:len(selected_period) + 1]
 
     smallest_division = subperiods[-1]
 
     for listen in relevant_listens:
-        if all([getattr(listen.date, subperiods[i]) == selected_period[i] for i in range(len(subperiods) - 1) ]):
-            years[getattr(listen.date, smallest_division)] = years.get(getattr(listen.date, smallest_division), 0) + 1
+        if all([getattr(listen.date, subperiods[i]) == selected_period[i]
+                for i in range(len(subperiods) - 1)]):
+            years[getattr(listen.date, smallest_division)] = \
+                years.get(getattr(listen.date, smallest_division), 0) + 1
 
     threshold = sum(years.values()) / len(years.keys())
     # threshold = 3
@@ -64,7 +67,6 @@ listens_for_songs = {}
 discovered_songs = {}
 
 
-
 def song_discovered(listen_data):
     if len(listen_data) < 2:
         # INSUFFICIENT DATA FOR MEANINGFUL ANSWER
@@ -74,30 +76,36 @@ def song_discovered(listen_data):
         return prev_listen
 
 
-
 current_day = None
 for listen in listens:
     unique_song = (listen.track, listen.artist)
     latest_listen = listen.date.date()
-    listens_for_songs[unique_song] = listens_for_songs.get(unique_song, []) + [latest_listen]
+    listens_for_songs[unique_song] = \
+        listens_for_songs.get(unique_song, []) + [latest_listen]
     total_listens = listens_for_songs[unique_song]
     discovered_date = song_discovered(total_listens)
     if discovered_date:
-        discovered_songs[unique_song] = discovered_songs.get(unique_song, discovered_date)
+        discovered_songs[unique_song] = discovered_songs.get(
+            unique_song, discovered_date)
 
 with open("playlist.csv", "w") as f:
-    for item in sorted(discovered_songs.keys(), key=lambda x: discovered_songs[x]):
-        for thing in (item[0], ",", item[1], ",", discovered_songs[item],"\n"):
+    for item in sorted(
+            discovered_songs.keys(), key=lambda x: discovered_songs[x]):
+        for thing in (item[0], ",", item[1], ",",
+                      discovered_songs[item], "\n"):
             f.write(str(thing))
 
 with open("test.res", "w") as f:
-    for item in sorted(discovered_songs.keys(), key=lambda x: discovered_songs[x]):
+    for item in sorted(
+            discovered_songs.keys(), key=lambda x: discovered_songs[x]):
         f.write(str(item))
-        f.write(" ")        
+        f.write(" ")
         f.write(str(discovered_songs[item]))
         f.write("\n")
 
-with open("test.res") as f:
-    with open("two.res") as g:
-        assert f.readlines() == g.readlines()
-        print "Test for algorithm consistency passed"
+
+if __name__ == "__main__":
+    with open("test.res") as f:
+        with open("two.res") as g:
+            assert f.readlines() == g.readlines()
+            print "Test for algorithm consistency passed"

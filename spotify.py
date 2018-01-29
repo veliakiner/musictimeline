@@ -36,14 +36,26 @@ import csv
 
 with open("wew.csv") as f:
     track_no = len(f.readlines())
-with open("wew.csv") as f:
+    # files = f.readlines()
+with open("spotify_playlist.txt", "w") as f:
+    f.write("")
 
+with open("wew.csv") as f:
     for line_no, line in enumerate(csv.reader(f, quotechar='"',delimiter=",",quoting=csv.QUOTE_ALL)):
-        print "Writing track {} of {}".format(line_no + 1, track_no)
-        track, artist, _ = line
-        with open("spotify_playlist.txt", "a") as f:
+        try:
+            print "Writing track {} of {}".format(line_no + 1, track_no)
+            track, artist, _ = line
             url = generate_spotify_url(track, artist)
-            if url:
-                f.write(generate_spotify_url(track, artist) + "\n")
-            else:
+            if not url:
                 print "Track not found on Spotify: {} - {}".format(artist, track)
+                if artist in track:
+                    track = track.replace(artist, "").replace("-", "").replace("  ", " ")
+                    print "Artist found in track. Correcting possible scrobble error. Searching for {} - {}".format(artist, track)
+                    url = generate_spotify_url(track, artist)
+                    if url:
+                        "Correction worked."
+            if url:
+                with open("spotify_playlist.txt", "a") as g:
+                    g.write(generate_spotify_url(track, artist) + "\n")
+        except Exception as e:
+            print e

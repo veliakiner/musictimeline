@@ -32,6 +32,7 @@ def generate_spotify_url(track, artist, retry_attempted=False):
 
 
 import csv
+import re
 
 
 with open("wew.csv") as f:
@@ -48,12 +49,16 @@ with open("wew.csv") as f:
             url = generate_spotify_url(track, artist)
             if not url:
                 print "Track not found on Spotify: {} - {}".format(artist, track)
-                if artist in track:
-                    track = track.replace(artist, "").replace("-", "").replace("  ", " ")
-                    print "Artist found in track. Correcting possible scrobble error. Searching for {} - {}".format(artist, track)
+                pattern = r'{}[ -]*'.format(artist)
+                artist_crap = re.findall(pattern, track, re.IGNORECASE)
+                if artist_crap:
+                    track = track.replace(artist_crap[0], "")
+                    print "Artist found in track. Correcting possible scrobble error. Searching for {} - {}".format(artist, track),
                     url = generate_spotify_url(track, artist)
                     if url:
-                        "Correction worked."
+                        print "- Correction worked."
+                    else:
+                        print ""
             if url:
                 with open("spotify_playlist.txt", "a") as g:
                     g.write(generate_spotify_url(track, artist) + "\n")

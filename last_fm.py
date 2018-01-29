@@ -6,7 +6,7 @@ class Listen():
         self.artist = artist
         self.album = album
         self.track = track
-        self.date = date
+        self.date = int(date)
 
     def __str__(self):
         return str([self.artist, self.album, self.track, self.date])
@@ -17,7 +17,7 @@ def read_csv(path):
     with open(path) as f:
         for record in f.readlines()[::-1]:
             data = record.split(",")
-            data[-1] = dateutil.parser.parse(data[-1], dayfirst=True)
+            data[-1] = int(data[-1])
             listens.append(Listen(*data))
     print("Opened data source")
     return listens
@@ -31,7 +31,7 @@ def song_discovered(listen_data):
         # INSUFFICIENT DATA FOR MEANINGFUL ANSWER
         return False
     latest_listen, prev_listen = listen_data[-1], listen_data[-2]
-    if (latest_listen - prev_listen).days < 5:
+    if (latest_listen - prev_listen) < 5  * 60 * 60 * 24:
         return prev_listen
 
 
@@ -39,7 +39,7 @@ def generate_playlist(listens):
     discovered_songs = {}
     for listen in listens:
         unique_song = (listen.track, listen.artist)
-        latest_listen = listen.date.date()
+        latest_listen = listen.date
         listens_for_songs[unique_song] = \
             listens_for_songs.get(unique_song, []) + [latest_listen]
         total_listens = listens_for_songs[unique_song]
@@ -54,12 +54,50 @@ def write_playlist_to_file(discovered_songs, output_file):
     with open(output_file, "w") as f:
         for item in sorted(
                 discovered_songs.keys(), key=lambda x: discovered_songs[x]):
-            for thing in (item[0], ",", item[1], ",",
-                          discovered_songs[item], "\n"):
-                f.write(str(thing))
+            for thing in (u'"{}"'.format(item[0]), u",", u'"{}"'.format(item[1]), u",",
+                          str(discovered_songs[item]).decode("utf-8"), u"\n"):
+                f.write(thing.encode('utf-8'))
+
+
+import requests
+import xmltodict
+import time
+import datetime
+
+
+USERNAME = "Cookie_crumbs"
+def get_last_fm_data(username, start, end, listen_list):
+    history = requests.get("http://ws.audioscrobbler.com/2.0/?method=user.getRecentTracks&user=Cookie_crumbs&api_key={}&from={}&to={}&limit=200".format(start, end)).text
+    y = xmltodict.parse(history)
+    tracks = y.get("lfm").get("recenttracks").get("track")
+    if not tracks:
+        return None
+    for track in tracks:
+        listen = Listen(track.get("artist").get("#text"), track.get("album").get("#text"), track.get("name"), track.get("date").get("@uts"))
+        listen_list.append(listen)
+        print listen
+        now = track.get("date").get("@uts")
+    return now
+
+
+def get_all_last_fm_data(username):
+    """Returns all your Last.fm scrobbles in chronological order."""
+    listens = []
+    now = time.time()
+    while now:
+        now = get_last_fm_data(USERNAME, 1, now, listens)
+    # The Last.FM API returns tracks in reverse chronological order, up to the maximum allowed per request.
+    # This means it's far easier to return scrobbles in this order, but the algorithm needs to start from the beginning
+    # - otherwise it will mark a song with a date corresponding to it's latest clustering in your history, rather than the first one which is what we're looking for.
+    return listens[::-1]
 
 
 if __name__ == "__main__":
-    path = "C:/Users/Veli/Downloads/Cookie_crumbs.csv"
-    playlist = generate_playlist(read_csv(path))
-    write_playlist_to_file(playlist, "veli's songs.csv")
+    # start = time.mktime(
+    #     datetime.datetime.strptime("01/10/2010", "%d/%m/%Y").timetuple())
+    # end = time.mktime(
+    #     datetime.datetime.strptime("01/12/2010", "%d/%m/%Y").timetuple())
+    # get_last_fm_data(USERNAME, start, end)
+    data = get_all_last_fm_data(USERNAME)
+    playlist = generate_playlist(data)
+    write_playlist_to_file(playlist, "wew.csv")

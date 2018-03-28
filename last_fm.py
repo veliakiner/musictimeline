@@ -72,7 +72,7 @@ def get_all_last_fm_data(username):
     listens = []
     now = time.time()
     while now:
-        now = get_last_fm_data(USERNAME, 1, now, listens)
+        now = get_last_fm_data(username, 1, now, listens)
     # The Last.FM API returns tracks in reverse chronological order, up to the maximum allowed per request.
     # This means it's far easier to return scrobbles in this order, but the algorithm needs to start from the beginning
     # - otherwise it will mark a song with a date corresponding to it's latest clustering in your history, rather than the first one which is what we're looking for.

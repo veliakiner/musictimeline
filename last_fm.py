@@ -1,6 +1,14 @@
 import requests
 import xmltodict
 import time
+import os
+
+
+API_KEY = os.environ.get("LASTFM_API_KEY")
+SECRET = os.environ.get("LASTFM_SECRET")
+
+assert API_KEY, "API key not set in environment. Did you run secrets.bat first?"
+assert SECRET, "Secret not set in environment. Did you run secrets.bat first?"
 
 
 class Listen():
@@ -63,7 +71,7 @@ def write_playlist_to_file(discovered_songs, output_file):
 
 USERNAME = "Cookie_crumbs"
 def get_last_fm_data(username, start, end, listen_list):
-    history = requests.get("http://ws.audioscrobbler.com/2.0/?method=user.getRecentTracks&user=Cookie_crumbs&api_key={}&from={}&to={}&limit=200".format(start, end)).text
+    history = requests.get("http://ws.audioscrobbler.com/2.0/?method=user.getRecentTracks&user=Cookie_crumbs&api_key={}&from={}&to={}&limit=200".format(API_KEY, start, end)).text
     y = xmltodict.parse(history)
     tracks = y.get("lfm").get("recenttracks").get("track")
     if not tracks:

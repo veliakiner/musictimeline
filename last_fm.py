@@ -69,9 +69,12 @@ def write_playlist_to_file(discovered_songs, output_file):
                 f.write(thing.encode('utf-8'))
 
 
-USERNAME = "Cookie_crumbs"
+URL = "http://ws.audioscrobbler.com/2.0/?method=user.getRecentTracks"
+query = "&user={}&api_key={}&from={}&to={}&limit=200"
+
+
 def get_last_fm_data(username, start, end, listen_list):
-    history = requests.get("http://ws.audioscrobbler.com/2.0/?method=user.getRecentTracks&user=Cookie_crumbs&api_key={}&from={}&to={}&limit=200".format(API_KEY, start, end)).text
+    history = requests.get(URL + query.format(username, API_KEY, start, end)).text
     y = xmltodict.parse(history)
     tracks = y.get("lfm").get("recenttracks").get("track")
     if not tracks:

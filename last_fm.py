@@ -30,15 +30,18 @@ def song_discovered(listen_data):
         # INSUFFICIENT DATA FOR MEANINGFUL ANSWER
         return False
     latest_listen, prev_listen = listen_data[-1], listen_data[-2]
-    if (latest_listen - prev_listen) < 5  * 60 * 60 * 24:
+    if (latest_listen.date - prev_listen.date) < 5  * 60 * 60 * 24:
         return prev_listen
 
 
 def generate_playlist(listens):
+    """Walks through listen history starting from the listening history start.
+
+    For every listen encountered, this will check when the last listen was to determine whether the song was discovered."""
     discovered_songs = {}
     for listen in listens:
         unique_song = (listen.track, listen.artist)
-        latest_listen = listen.date
+        latest_listen = listen
         listens_for_songs[unique_song] = \
             listens_for_songs.get(unique_song, []) + [latest_listen]
         total_listens = listens_for_songs[unique_song]
@@ -62,7 +65,6 @@ def get_last_fm_data(username, start, end, listen_list):
     for track in tracks:
         listen = Listen(track.get("artist").get("#text"), track.get("album").get("#text"), track.get("name"), track.get("date").get("@uts"))
         listen_list.append(listen)
-        print(listen)
         now = track.get("date").get("@uts")
     return now
 

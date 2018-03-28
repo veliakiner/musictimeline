@@ -1,4 +1,6 @@
-import dateutil.parser
+import requests
+import xmltodict
+import time
 
 
 class Listen():
@@ -59,12 +61,6 @@ def write_playlist_to_file(discovered_songs, output_file):
                 f.write(thing.encode('utf-8'))
 
 
-import requests
-import xmltodict
-import time
-import datetime
-
-
 USERNAME = "Cookie_crumbs"
 def get_last_fm_data(username, start, end, listen_list):
     history = requests.get("http://ws.audioscrobbler.com/2.0/?method=user.getRecentTracks&user=Cookie_crumbs&api_key={}&from={}&to={}&limit=200".format(start, end)).text
@@ -75,7 +71,7 @@ def get_last_fm_data(username, start, end, listen_list):
     for track in tracks:
         listen = Listen(track.get("artist").get("#text"), track.get("album").get("#text"), track.get("name"), track.get("date").get("@uts"))
         listen_list.append(listen)
-        print listen
+        print(listen)
         now = track.get("date").get("@uts")
     return now
 
@@ -90,14 +86,3 @@ def get_all_last_fm_data(username):
     # This means it's far easier to return scrobbles in this order, but the algorithm needs to start from the beginning
     # - otherwise it will mark a song with a date corresponding to it's latest clustering in your history, rather than the first one which is what we're looking for.
     return listens[::-1]
-
-
-if __name__ == "__main__":
-    # start = time.mktime(
-    #     datetime.datetime.strptime("01/10/2010", "%d/%m/%Y").timetuple())
-    # end = time.mktime(
-    #     datetime.datetime.strptime("01/12/2010", "%d/%m/%Y").timetuple())
-    # get_last_fm_data(USERNAME, start, end)
-    data = get_all_last_fm_data(USERNAME)
-    playlist = generate_playlist(data)
-    write_playlist_to_file(playlist, "wew.csv")

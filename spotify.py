@@ -2,9 +2,15 @@ import requests
 import urllib
 import json
 from requests.auth import HTTPBasicAuth
+import os
+
+SPOTIFY_KEY = os.environ.get("SPOTIFY_KEY")
+SPOTIFY_SECRET = os.environ.get("SPOTIFY_SECRET")
+auth = [SPOTIFY_KEY, SPOTIFY_SECRET]
 
 
 params = {"grant_type": "client_credentials"}
+
 
 token_json = requests.post("https://accounts.spotify.com/api/token", auth=HTTPBasicAuth(*auth), data=params).text
 token = json.loads(token_json)["access_token"]

@@ -22,17 +22,6 @@ class Listen():
         return str([self.artist, self.album, self.track, self.date])
 
 
-def read_csv(path):
-    listens = []
-    with open(path) as f:
-        for record in f.readlines()[::-1]:
-            data = record.split(",")
-            data[-1] = int(data[-1])
-            listens.append(Listen(*data))
-    print("Opened data source")
-    return listens
-
-
 listens_for_songs = {}
 
 
@@ -58,15 +47,6 @@ def generate_playlist(listens):
             discovered_songs[unique_song] = discovered_songs.get(
                 unique_song, discovered_date)
     return discovered_songs
-
-
-def write_playlist_to_file(discovered_songs, output_file):
-    with open(output_file, "w") as f:
-        for item in sorted(
-                discovered_songs.keys(), key=lambda x: discovered_songs[x]):
-            for thing in (u'"{}"'.format(item[0]), u",", u'"{}"'.format(item[1]), u",",
-                          str(discovered_songs[item]).decode("utf-8"), u"\n"):
-                f.write(thing.encode('utf-8'))
 
 
 URL = "http://ws.audioscrobbler.com/2.0/?method=user.getRecentTracks"

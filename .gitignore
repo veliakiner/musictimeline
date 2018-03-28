@@ -1,2 +1,5 @@
-test.res
 secrets.bat
+__pycache__/
+.cache/
+.idea/
+
